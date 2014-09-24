@@ -13,3 +13,7 @@ Whats needed for launch?
 3. version checking needs to be in place to allow one-click-update capabilities. We absolutely MUST have this before launching.
 
 4. avatar support. Other features can be launched as they are developed, but avatar support is going to be a crucial starting point.
+
+Half Life 3 Confirmed
+=====
+There is not an ETA. FEKv3 will basically launch when it's ready to launch and not a moment before!
