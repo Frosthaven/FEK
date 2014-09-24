@@ -15,7 +15,17 @@
 
 (function() {
 
+/* CORE ---------------------------------------------------
+---------------------------------------------------------*/
 var FEK = {
+    config: {
+      version: '3.0',
+      uri: {
+        endpoint   : 'http://videomatic3.diskstation.me/~worreh/avatar/feklatestrelease/FEKJSONResponderv2.php',
+        codeHome   : 'http://videomatic3.diskstation.me/~worreh/avatar/feklatestrelease/',
+        avatarHome : 'http://videomatic3.diskstation.me/~worreh/avatar/'
+      }
+    },
     session: {
         username : '',
         region   : '',
@@ -25,14 +35,17 @@ var FEK = {
 
     initialize: function(callback) {
       //this should ensure page contents have loaded before returning
-        FEK.waitForContent(function(){
+        FEK.waitForContent('#page-main', function(){
           FEK.getSessionData();
+          FEK.loadMemberData(function() {
             if ($.isFunction(callback)) { callback(); }
+          });
         });
     },
 
-    waitForContent: function(callback) {
-        //we need to wait for #page-main to exist before continuing
+    waitForContent: function(selector, callback) {
+        //waits for the provided selector to be available before
+        //continuing
         var timeOut = 5000, currentTime = 0;
         var interval = setInterval(function() {
             currentTime = currentTime + 1000;
@@ -42,7 +55,7 @@ var FEK = {
                 clearInterval(interval);
             } else {
                 //check for #page-main
-                if ($('#page-main').length > 0) {
+                if ($(selector).length > 0) {
                     clearInterval(interval);
 
                     //we can continue initializing
@@ -52,6 +65,53 @@ var FEK = {
                 }
             }
         },1000);
+    },
+
+    isValidProfileElement: function(el) {
+      if (el.parent().hasClass('left')) {
+        //if the element has parent with class left,
+        //it's a false positive inline-profile from
+        //the comment reply box - "Posting as Frosthaven"
+        return false;
+      } else {
+        return true;
+      }
+    },
+
+    loadMemberData: function(callback) {
+      //loads member data into the session
+      //for this, we'll scan for inline-profiles on the page
+      //and then make an api call to the FEK server
+      var users = [];
+      var username;
+      $('.inline-profile:not(.fek-prepped)').each(function() {
+        if (FEK.isValidProfileElement($(this))) {
+          username = $(this).find('.username').html();
+          if ($.inArray(username, users) < 0) {
+            users.push(username);
+          }
+          $(this).addClass('fek-prepped');
+        }
+      });
+
+      $.ajax({
+          dataType: "json",
+          url: FEK.config.uri.endpoint,
+          data: {
+              action:     'getMemberData',
+              region:     FEK.session.region,
+              legacySupport:  true,
+              users:      users
+          }
+      }).success(function(data) {
+          FEK.session.users = data.users.records;
+          console.log(FEK.session.users);
+      }).always(function() {
+        if ($.isFunction(callback)) {
+            callback();
+        }
+        $.event.trigger({type: "memberDataLoaded"});
+      });
     },
 
     getSessionData: function() {
@@ -92,8 +152,38 @@ var FEK = {
     }
 };
 
+/* FEATURES -----------------------------------------------
+---------------------------------------------------------*/
+// todo: expand these into an options
+// panel. for now we're just hard coding
+// version checking and avatar support
+
+FEK.applyFeature = {
+  // VERSION CHECK ---------------------------------
+  versionCheck: function() {
+
+  },
+
+  // AVATARS ---------------------------------------
+  avatars: function() {
+    if (FEK.session.page !== 'discussion_show') { return false; }
+
+    var users = [];
+    var replaceImages = function() {
+
+    };
+
+    $('.inline-profile').each(function() {
+
+    });
+  }
+};
+
+/* IGNITION -----------------------------------------------
+---------------------------------------------------------*/
 FEK.initialize(function() {
-  console.log(FEK.session);
+  FEK.applyFeature.avatars();
+  console.log('FEK v' + FEK.config.version + ' LOADED!');
 });
 
 })();
