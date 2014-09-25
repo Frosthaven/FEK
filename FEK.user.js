@@ -557,7 +557,7 @@ FEK.applyFeature = {
                    '4|Doughnut',
                    '5|Egg',
                    '6|Fish'];
-        FEK.createFeature('Dummy Feature 5', 'dummy5', options, '6', tooltip, tabgroup, tab, category,
+        FEK.createFeature('Dummy Feature 5', 'dummy5', options, '3', tooltip, tabgroup, tab, category,
         function(option) { /* Option stuff in here */ });
         
         // NEW CATEGORY!
